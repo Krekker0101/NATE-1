@@ -1,117 +1,217 @@
-# Abdulloh Ashurov Assistant
+<p align="center">
+  <img src="assets/readme/xitkun-hero.svg" alt="XITKUN hero banner" width="100%" />
+</p>
 
-Private, local-first AI copilot for meetings, interviews, and focused work.
+<p align="center">
+  <a href="https://github.com/Krekker0101/NATE-1">
+    <img src="https://img.shields.io/github/stars/Krekker0101/NATE-1?style=for-the-badge&logo=github&label=Stars&color=111827" alt="GitHub stars" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-AGPL%20v3-111827?style=for-the-badge&logo=gnu&logoColor=white" alt="AGPL v3 license" />
+  </a>
+  <a href="https://github.com/Krekker0101/NATE-1/commits/main">
+    <img src="https://img.shields.io/github/last-commit/Krekker0101/NATE-1?style=for-the-badge&color=111827" alt="Last commit" />
+  </a>
+  <a href="https://github.com/Krekker0101/NATE-1">
+    <img src="https://img.shields.io/badge/Desktop-Electron%20%2B%20React-111827?style=for-the-badge&logo=electron&logoColor=8CE9F8" alt="Electron and React" />
+  </a>
+</p>
 
-## Overview
+<p align="center">
+  <a href="https://github.com/Krekker0101/NATE-1/releases">
+    <img src="https://img.shields.io/badge/Download-Latest%20Build-0f172a?style=for-the-badge&logo=windows11&logoColor=white" alt="Download latest build" />
+  </a>
+  <a href="https://tajik-develop.yzz.me">
+    <img src="https://img.shields.io/badge/Portfolio-tajik--develop.yzz.me-0f172a?style=for-the-badge&logo=firefoxbrowser&logoColor=white" alt="Portfolio" />
+  </a>
+  <a href="https://github.com/Krekker0101/NATE-1/issues">
+    <img src="https://img.shields.io/badge/Feedback-Issues%20%26%20Ideas-0f172a?style=for-the-badge&logo=github&logoColor=white" alt="Issues and ideas" />
+  </a>
+</p>
 
-Abdulloh Ashurov Assistant is a desktop application built with Electron, Vite, React, TypeScript, and Rust-backed audio tooling. It is designed for live assistance workflows: capture context, route it through your preferred model provider, and keep notes and transcripts organized locally.
+<p align="center">
+  <strong>XITKUN</strong> is a dark, local-first AI desktop copilot for meetings, interviews, live problem-solving, and focused workflows.
+  <br />
+  Bring your own AI services, auto-detect offline Ollama models, and keep the experience fast, polished, and desktop-native.
+</p>
 
-This codebase was professionally rebranded and cleaned up to center ownership under **Abdulloh Ashurov**, reduce hard-coded identity strings, and make future branding changes safer.
+> [!IMPORTANT]
+> XITKUN is designed around user-controlled routing. You choose whether answers come from local Ollama models or your own cloud APIs such as OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible endpoint.
 
-## What It Does
+## Why XITKUN Feels Different
 
-- Live meeting assistance with overlay-style UI
-- Screenshot capture and AI analysis
-- Real-time transcription workflows
-- Local meeting history and context retrieval
-- Multiple AI provider integrations, including local model paths
-- Desktop packaging for Windows and macOS
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Bring Your Own AI</h3>
+      <p>Add ChatGPT/OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible API with your own key, base URL, and model selection.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Offline Local Models</h3>
+      <p>If Ollama already has downloaded models, XITKUN detects them automatically and lets them work locally without noisy setup friction.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Overlay-First Workflow</h3>
+      <p>Built for real-time usage: live meetings, coding interviews, screenshot analysis, quick responses, and focused desktop assistance.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Polished Desktop Delivery</h3>
+      <p>Electron packaging, custom branding, stronger installer flow, dark Windows installer assets, and production-ready desktop build paths.</p>
+    </td>
+  </tr>
+</table>
 
-## Architecture
+## Product Snapshot
 
-- `src/`: main renderer app used by the Electron shell
-- `electron/`: main process, IPC, update flow, calendar integration, local data services
-- `native-module/`: Rust-based native audio module
-- `assets/`: icons, previews, packaging resources
-- `scripts/`: build and maintenance scripts
-- `docs/`: release and operational notes
+| Layer | What it gives you |
+| --- | --- |
+| `AI Services` | Connect OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible service with your own API key and model. |
+| `Ollama Auto-Detect` | Pick up locally downloaded Ollama models automatically and use them offline. |
+| `Desktop Assistant UX` | Overlay windows, fast model switching, screenshot capture, and live assistance workflows. |
+| `Local Context` | Keep transcripts, notes, and contextual workflow data on-device wherever possible. |
+| `Build + Packaging` | Modern Electron build pipeline, Windows installer generation, and branded release artifacts for `XITKUN`. |
 
-## Branding and Ownership
+## AI Routing Matrix
 
-The main branding layer now lives in two dedicated config files:
+| Route | Status | Purpose |
+| --- | --- | --- |
+| `OpenAI / ChatGPT` | Supported | Connect official OpenAI endpoints with your own key and chosen model. |
+| `OpenRouter` | Supported | Route through multi-model cloud access with your own account. |
+| `DeepSeek` | Supported | Use DeepSeek through its OpenAI-compatible API surface. |
+| `Custom OpenAI-Compatible` | Supported | Point XITKUN at your own OpenAI-like endpoint and keep control of the stack. |
+| `Ollama` | Supported | Detect local models automatically and run offline if they are already installed. |
 
-- [`src/config/brand.ts`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/src/config/brand.ts)
-- [`electron/config/brand.ts`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/electron/config/brand.ts)
+## System Architecture
 
-These files centralize:
+```mermaid
+flowchart LR
+    UI["React + Electron UI"]
+    IPC["Secure IPC layer"]
+    CREDS["Encrypted credentials manager"]
+    ROUTER["Runtime model router"]
+    LOCAL["Local data and context"]
+    CLOUD["OpenAI / OpenRouter / DeepSeek / Custom OpenAI-compatible"]
+    OLLAMA["Ollama local models"]
+    OUTPUT["Overlay answers, transcripts, notes, screenshot analysis"]
 
-- app name
-- owner name
-- repository metadata
-- release artifact naming
-- optional contact and support links
+    UI --> IPC
+    IPC --> CREDS
+    IPC --> ROUTER
+    UI --> LOCAL
+    LOCAL --> ROUTER
+    CREDS --> ROUTER
+    ROUTER --> CLOUD
+    ROUTER --> OLLAMA
+    ROUTER --> OUTPUT
+```
 
-## Getting Started
+## Core Experience
 
-### Prerequisites
+- Use a desktop-native AI copilot instead of a browser tab maze.
+- Route requests to your own providers instead of being locked into one baked-in model list.
+- Let Ollama stay silent and useful in the background when local models already exist.
+- Switch between local and cloud modes depending on privacy, speed, or cost.
+- Package the app into a polished `XITKUN` Windows installer and portable build.
 
-- Node.js 20+
-- npm
-- Rust toolchain if you need to rebuild the native module
+## Tech Stack
 
-### Install
+| Area | Stack |
+| --- | --- |
+| Shell | Electron |
+| Frontend | React, TypeScript, Vite, Tailwind |
+| Desktop Runtime | Electron main process, IPC, native desktop integrations |
+| Local Storage | Desktop-managed local data and settings flows |
+| AI Routing | OpenAI-compatible APIs plus Ollama local model support |
+| Native Work | Rust-backed and native desktop/audio tooling |
+
+## Quick Start
 
 ```bash
 npm install
-```
-
-### Run in Development
-
-```bash
 npm run app:dev
 ```
 
-### Build the Renderer
+<details>
+<summary><strong>Build commands</strong></summary>
 
 ```bash
+# Production renderer build
 npm run build
+
+# Electron main/preload build
+npm run build:electron
+
+# Full desktop packaging
+npm run dist
+
+# Windows-focused packaging
+npm run dist:win
 ```
 
-### Build the Desktop App
+</details>
+
+<details>
+<summary><strong>Development flow</strong></summary>
 
 ```bash
-npm run app:build
+# Start Vite + Electron together
+npm run app:dev
+
+# Watch Electron TypeScript only
+npm run watch
+
+# Production-style Electron run
+npm run electron:build
 ```
 
-## Configuration Notes
+</details>
 
-- AI credentials and provider settings are configured through the application settings UI.
-- Calendar OAuth expects valid Google credentials in environment variables.
-- Release endpoints currently point to the assumed GitHub repository:
-  `AbdullohAshurov/abdulloh-ashurov-assistant`
+## Repository Layout
 
-If your actual repository or public profile differs, update:
+```text
+src/                 Renderer UI, screens, model selection, settings, analytics
+electron/            Main process, IPC, credentials, updates, local runtime services
+native-module/       Native and Rust-backed functionality
+assets/              Icons, packaging resources, installer visuals, brand assets
+scripts/             Build helpers, packaging helpers, release preparation
+release/             Generated packaged artifacts
+```
 
-- [`package.json`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/package.json)
-- [`src/config/brand.ts`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/src/config/brand.ts)
-- [`electron/config/brand.ts`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/electron/config/brand.ts)
+## Notable Project Upgrades
 
-## Privacy Positioning
+- `XITKUN` product branding applied across app surfaces and packaged artifacts
+- New AI services system for user-owned provider setup instead of hard-coded cloud entries
+- Automatic Ollama model discovery for offline use
+- Stronger Windows packaging with a cleaner installer configuration
+- Custom dark installer sidebars generated as project assets
+- Cleaner model labeling and selection flows across the desktop UI
 
-The product is positioned as a **local-first** assistant:
+## Privacy and Control
 
-- transcripts and context are intended to stay on-device where possible
-- user-triggered actions are preferred over background collection
-- model routing is explicit and configurable
+> [!NOTE]
+> XITKUN is local-first, not cloud-forced.
+> If you add cloud APIs, routing becomes explicit and user-directed.
+> If you keep things on Ollama, the workflow can stay local and offline.
 
-You should still review every provider integration and deployment setting before distributing the app in production environments.
+This project is aimed at people who want a desktop copilot that feels intentional:
 
-## Project Quality Improvements Applied
-
-- centralized product branding and owner identity
-- replaced hard-coded legacy author references in UI, Electron flows, and LLM prompts
-- improved package metadata and licensing alignment
-- upgraded HTML metadata and manifest naming
-- cleaned up update naming and macOS quarantine instructions
-- removed old public-facing marketing tone from the README
-
-## Known Follow-Up Opportunities
-
-- remove or archive duplicate `temp/` and legacy `renderer/` branches if they are no longer needed
-- add linting and CI validation if this repository is meant for long-term maintenance
-- replace placeholder repository assumptions with Abdulloh Ashurov’s real public links if available
-- review analytics defaults and make telemetry fully opt-in if desired
+- private where possible
+- configurable where needed
+- fast to operate during live workflows
+- modern enough to ship as a real application, not a prototype shell
 
 ## License
 
-This repository ships with the **GNU AGPL v3** license. See [`LICENSE`](/c:/Users/Креккер/Desktop/PY/natively-cluely-ai-assistant-main/LICENSE).
+This repository is licensed under the **GNU AGPL v3.0-only** license.
+
+- Read the full license in [LICENSE](LICENSE)
+- If you distribute a modified version, the AGPL requires preserving source availability under the same license terms
+
+## Links
+
+- Repository: [Krekker0101/NATE-1](https://github.com/Krekker0101/NATE-1)
+- Portfolio: [tajik-develop.yzz.me](https://tajik-develop.yzz.me)
+- Issues: [GitHub Issues](https://github.com/Krekker0101/NATE-1/issues)
+- Releases: [GitHub Releases](https://github.com/Krekker0101/NATE-1/releases)
