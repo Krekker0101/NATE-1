@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/icons/png/icon_512x512.png" alt="XITKUN icon" width="132" />
+</p>
+
+<p align="center">
   <img src="assets/readme/xitkun-hero.svg" alt="XITKUN hero banner" width="100%" />
 </p>
 
@@ -6,20 +10,20 @@
   <a href="https://github.com/Krekker0101/NATE-1">
     <img src="https://img.shields.io/github/stars/Krekker0101/NATE-1?style=for-the-badge&logo=github&label=Stars&color=111827" alt="GitHub stars" />
   </a>
+  <a href="https://github.com/Krekker0101/NATE-1/releases">
+    <img src="https://img.shields.io/github/v/release/Krekker0101/NATE-1?style=for-the-badge&color=111827" alt="Latest release" />
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-AGPL%20v3-111827?style=for-the-badge&logo=gnu&logoColor=white" alt="AGPL v3 license" />
   </a>
   <a href="https://github.com/Krekker0101/NATE-1/commits/main">
     <img src="https://img.shields.io/github/last-commit/Krekker0101/NATE-1?style=for-the-badge&color=111827" alt="Last commit" />
   </a>
-  <a href="https://github.com/Krekker0101/NATE-1">
-    <img src="https://img.shields.io/badge/Desktop-Electron%20%2B%20React-111827?style=for-the-badge&logo=electron&logoColor=8CE9F8" alt="Electron and React" />
-  </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Krekker0101/NATE-1/releases">
-    <img src="https://img.shields.io/badge/Download-Latest%20Build-0f172a?style=for-the-badge&logo=windows11&logoColor=white" alt="Download latest build" />
+  <a href="https://github.com/Krekker0101/NATE-1">
+    <img src="https://img.shields.io/badge/Desktop-Electron%20%2B%20React-0f172a?style=for-the-badge&logo=electron&logoColor=8CE9F8" alt="Electron and React" />
   </a>
   <a href="https://tajik-develop.yzz.me">
     <img src="https://img.shields.io/badge/Portfolio-tajik--develop.yzz.me-0f172a?style=for-the-badge&logo=firefoxbrowser&logoColor=white" alt="Portfolio" />
@@ -30,90 +34,188 @@
 </p>
 
 <p align="center">
-  <strong>XITKUN</strong> is a dark, local-first AI desktop copilot for meetings, interviews, live problem-solving, and focused workflows.
+  <strong>XITKUN</strong> is a dark, local-first AI desktop copilot for meetings, interviews, coding pressure, screenshots, transcripts, and fast decision-making.
   <br />
-  Bring your own AI services, auto-detect offline Ollama models, and keep the experience fast, polished, and desktop-native.
+  You bring the models. XITKUN brings the desktop experience, routing layer, local workflow, and sharper product feel.
 </p>
 
 > [!IMPORTANT]
-> XITKUN is designed around user-controlled routing. You choose whether answers come from local Ollama models or your own cloud APIs such as OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible endpoint.
+> XITKUN is intentionally built around user-controlled AI routing.
+> You can use your own `ChatGPT / OpenAI`, `OpenRouter`, `DeepSeek`, or any `OpenAI-compatible` endpoint, and if local `Ollama` models already exist, they can be used offline without forced cloud dependency.
 
-## Why XITKUN Feels Different
+## Product Manifest
+
+XITKUN is not trying to be another generic "AI app".
+It is being shaped into a desktop-native assistant with three priorities:
+
+- **Control** over providers, keys, endpoints, and runtime routing
+- **Speed** during live workflows where context switching destroys momentum
+- **Polish** in the places most desktop projects usually ignore: naming, packaging, installer quality, and overall feel
+
+<p align="center">
+  <img src="assets/readme/xitkun-showcase.svg" alt="XITKUN showcase" width="100%" />
+</p>
+
+## Why It Stands Out
 
 <table>
   <tr>
-    <td width="50%" valign="top">
-      <h3>Bring Your Own AI</h3>
-      <p>Add ChatGPT/OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible API with your own key, base URL, and model selection.</p>
+    <td width="33%" valign="top">
+      <h3>Desktop-First</h3>
+      <p>Overlay workflow, fast switching, local context, and a UI shaped for active work instead of tab juggling.</p>
     </td>
-    <td width="50%" valign="top">
-      <h3>Offline Local Models</h3>
-      <p>If Ollama already has downloaded models, XITKUN detects them automatically and lets them work locally without noisy setup friction.</p>
+    <td width="33%" valign="top">
+      <h3>Provider Freedom</h3>
+      <p>Bring your own OpenAI, OpenRouter, DeepSeek, or custom OpenAI-compatible service without hard-coded lock-in.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>Offline-Aware</h3>
+      <p>When Ollama models already exist, they are detected automatically and can stay local and quiet.</p>
     </td>
   </tr>
   <tr>
-    <td width="50%" valign="top">
-      <h3>Overlay-First Workflow</h3>
-      <p>Built for real-time usage: live meetings, coding interviews, screenshot analysis, quick responses, and focused desktop assistance.</p>
+    <td width="33%" valign="top">
+      <h3>Product Polish</h3>
+      <p>`XITKUN` branding, stronger packaging, dark installer visuals, and a more cohesive release surface.</p>
     </td>
-    <td width="50%" valign="top">
-      <h3>Polished Desktop Delivery</h3>
-      <p>Electron packaging, custom branding, stronger installer flow, dark Windows installer assets, and production-ready desktop build paths.</p>
+    <td width="33%" valign="top">
+      <h3>Live Workflow Utility</h3>
+      <p>Screenshots, transcripts, quick answers, contextual assistance, and real-time desktop usage patterns.</p>
+    </td>
+    <td width="33%" valign="top">
+      <h3>Local-First Intent</h3>
+      <p>Context and desktop behavior are structured to stay close to the machine and the user, not hidden behind a browser stack.</p>
     </td>
   </tr>
 </table>
 
-## Product Snapshot
+## Capability Grid
 
-| Layer | What it gives you |
+| Domain | What XITKUN gives you |
 | --- | --- |
-| `AI Services` | Connect OpenAI, OpenRouter, DeepSeek, or any OpenAI-compatible service with your own API key and model. |
-| `Ollama Auto-Detect` | Pick up locally downloaded Ollama models automatically and use them offline. |
-| `Desktop Assistant UX` | Overlay windows, fast model switching, screenshot capture, and live assistance workflows. |
-| `Local Context` | Keep transcripts, notes, and contextual workflow data on-device wherever possible. |
-| `Build + Packaging` | Modern Electron build pipeline, Windows installer generation, and branded release artifacts for `XITKUN`. |
+| `AI Services` | Add your own `ChatGPT / OpenAI`, `OpenRouter`, `DeepSeek`, or custom OpenAI-compatible service with key, base URL, and model. |
+| `Ollama` | Detect local models automatically and use them offline when available. |
+| `Overlay UX` | Fast desktop-native assistance for meetings, interviews, focused sessions, and quick response loops. |
+| `Screenshot Workflows` | Capture and route visual context into the active model path. |
+| `Transcription + Context` | Keep notes, contextual workflow memory, and transcript-oriented features close to the desktop flow. |
+| `Shipping` | Build and package `XITKUN` as a branded desktop app with Windows installer and portable outputs. |
 
-## AI Routing Matrix
+## AI Routing
 
-| Route | Status | Purpose |
+| Route | Status | Notes |
 | --- | --- | --- |
-| `OpenAI / ChatGPT` | Supported | Connect official OpenAI endpoints with your own key and chosen model. |
-| `OpenRouter` | Supported | Route through multi-model cloud access with your own account. |
-| `DeepSeek` | Supported | Use DeepSeek through its OpenAI-compatible API surface. |
-| `Custom OpenAI-Compatible` | Supported | Point XITKUN at your own OpenAI-like endpoint and keep control of the stack. |
-| `Ollama` | Supported | Detect local models automatically and run offline if they are already installed. |
+| `ChatGPT / OpenAI` | Supported | Official OpenAI API with your own key and selected model. |
+| `OpenRouter` | Supported | OpenAI-compatible gateway for multi-model access. |
+| `DeepSeek` | Supported | DeepSeek via its OpenAI-compatible endpoint style. |
+| `Custom OpenAI-compatible` | Supported | Bring your own endpoint, base URL, and model naming. |
+| `Ollama` | Supported | Local model detection and offline-capable usage. |
 
-## System Architecture
+<p align="center">
+  <img src="assets/readme/xitkun-system.svg" alt="XITKUN system map" width="100%" />
+</p>
 
-```mermaid
-flowchart LR
-    UI["React + Electron UI"]
-    IPC["Secure IPC layer"]
-    CREDS["Encrypted credentials manager"]
-    ROUTER["Runtime model router"]
-    LOCAL["Local data and context"]
-    CLOUD["OpenAI / OpenRouter / DeepSeek / Custom OpenAI-compatible"]
-    OLLAMA["Ollama local models"]
-    OUTPUT["Overlay answers, transcripts, notes, screenshot analysis"]
+## Architecture Mindset
 
-    UI --> IPC
-    IPC --> CREDS
-    IPC --> ROUTER
-    UI --> LOCAL
-    LOCAL --> ROUTER
-    CREDS --> ROUTER
-    ROUTER --> CLOUD
-    ROUTER --> OLLAMA
-    ROUTER --> OUTPUT
+XITKUN is structured more like a desktop product than a simple AI wrapper:
+
+- `Renderer UI` handles overlay surfaces, settings, selectors, and interaction flow
+- `Secure IPC + Electron main` bridges UI and desktop-native operations
+- `Credentials + AI router` manage service storage, model identities, and runtime switching
+- `Local context layer` keeps transcripts, notes, and on-device workflow state close to the user
+- `Provider layer` gives a clean split between cloud endpoints and local Ollama routing
+
+That split matters because it keeps the app flexible:
+
+- cloud when the user chooses cloud
+- local when the machine already has what it needs
+- one consistent UI above both
+
+## Designed For Real Use
+
+<details open>
+<summary><strong>Live meetings and calls</strong></summary>
+
+- Overlay-oriented experience instead of full-window interruption
+- Quick switching while a conversation is still moving
+- Better fit for note-heavy and decision-heavy sessions
+
+</details>
+
+<details open>
+<summary><strong>Interviews and coding pressure</strong></summary>
+
+- Faster context access during problem-solving
+- Screenshot capture for visual debugging or prompt grounding
+- Multiple model routes depending on privacy, cost, or capability
+
+</details>
+
+<details open>
+<summary><strong>Local-first users</strong></summary>
+
+- Ollama auto-detection when models are already downloaded
+- Less forced dependence on hosted providers
+- Cleaner path to offline-capable assistance
+
+</details>
+
+<p align="center">
+  <img src="assets/readme/xitkun-journey.svg" alt="XITKUN setup-to-ship journey" width="100%" />
+</p>
+
+## Build and Ship
+
+```bash
+# Install dependencies
+npm install
+
+# Run the app in development
+npm run app:dev
+
+# Build the renderer
+npm run build
+
+# Build Electron main/preload
+npm run build:electron
+
+# Build full desktop packages
+npm run dist
+
+# Build Windows installer + portable output
+npm run dist:win
 ```
 
-## Core Experience
+## Repo Layout
 
-- Use a desktop-native AI copilot instead of a browser tab maze.
-- Route requests to your own providers instead of being locked into one baked-in model list.
-- Let Ollama stay silent and useful in the background when local models already exist.
-- Switch between local and cloud modes depending on privacy, speed, or cost.
-- Package the app into a polished `XITKUN` Windows installer and portable build.
+```text
+src/                 Renderer UI, settings, model switching, analytics, overlay surfaces
+electron/            Main process, IPC, credentials, runtime helpers, desktop integrations
+native-module/       Native and Rust-backed functionality
+assets/              Product icons, installer assets, README visuals, packaging resources
+scripts/             Build helpers, packaging helpers, asset generation
+release/             Generated desktop artifacts
+```
+
+## Recent Product-Level Upgrades
+
+- `XITKUN` branding applied across packaged artifacts and visible app surfaces
+- New `AI Services` layer for user-supplied providers instead of hard-coded visible model vendors
+- Automatic `Ollama` local model detection for offline usage
+- Cleaner runtime model labeling across selectors and UI surfaces
+- Improved Windows packaging with darker, more intentional installer visuals
+- Stronger repository presentation and documentation assets
+
+## Product Philosophy
+
+> [!NOTE]
+> XITKUN aims to feel like a product that respects the user's machine, time, and control surface.
+
+That means:
+
+- local-first where it makes sense
+- configurable where lock-in usually happens
+- visually intentional instead of generic
+- practical enough to ship, not just demo
 
 ## Tech Stack
 
@@ -121,97 +223,21 @@ flowchart LR
 | --- | --- |
 | Shell | Electron |
 | Frontend | React, TypeScript, Vite, Tailwind |
-| Desktop Runtime | Electron main process, IPC, native desktop integrations |
-| Local Storage | Desktop-managed local data and settings flows |
-| AI Routing | OpenAI-compatible APIs plus Ollama local model support |
-| Native Work | Rust-backed and native desktop/audio tooling |
-
-## Quick Start
-
-```bash
-npm install
-npm run app:dev
-```
-
-<details>
-<summary><strong>Build commands</strong></summary>
-
-```bash
-# Production renderer build
-npm run build
-
-# Electron main/preload build
-npm run build:electron
-
-# Full desktop packaging
-npm run dist
-
-# Windows-focused packaging
-npm run dist:win
-```
-
-</details>
-
-<details>
-<summary><strong>Development flow</strong></summary>
-
-```bash
-# Start Vite + Electron together
-npm run app:dev
-
-# Watch Electron TypeScript only
-npm run watch
-
-# Production-style Electron run
-npm run electron:build
-```
-
-</details>
-
-## Repository Layout
-
-```text
-src/                 Renderer UI, screens, model selection, settings, analytics
-electron/            Main process, IPC, credentials, updates, local runtime services
-native-module/       Native and Rust-backed functionality
-assets/              Icons, packaging resources, installer visuals, brand assets
-scripts/             Build helpers, packaging helpers, release preparation
-release/             Generated packaged artifacts
-```
-
-## Notable Project Upgrades
-
-- `XITKUN` product branding applied across app surfaces and packaged artifacts
-- New AI services system for user-owned provider setup instead of hard-coded cloud entries
-- Automatic Ollama model discovery for offline use
-- Stronger Windows packaging with a cleaner installer configuration
-- Custom dark installer sidebars generated as project assets
-- Cleaner model labeling and selection flows across the desktop UI
-
-## Privacy and Control
-
-> [!NOTE]
-> XITKUN is local-first, not cloud-forced.
-> If you add cloud APIs, routing becomes explicit and user-directed.
-> If you keep things on Ollama, the workflow can stay local and offline.
-
-This project is aimed at people who want a desktop copilot that feels intentional:
-
-- private where possible
-- configurable where needed
-- fast to operate during live workflows
-- modern enough to ship as a real application, not a prototype shell
+| Desktop Runtime | Electron main process, preload, IPC, desktop integrations |
+| AI Runtime | OpenAI-compatible APIs and Ollama local model routing |
+| Native Work | Rust-backed/native desktop and audio tooling |
+| Packaging | Electron Builder with branded Windows installer flow |
 
 ## License
 
 This repository is licensed under the **GNU AGPL v3.0-only** license.
 
-- Read the full license in [LICENSE](LICENSE)
-- If you distribute a modified version, the AGPL requires preserving source availability under the same license terms
+- Full text: [LICENSE](LICENSE)
+- If you distribute a modified version, AGPL requires corresponding source availability under the same license family
 
 ## Links
 
 - Repository: [Krekker0101/NATE-1](https://github.com/Krekker0101/NATE-1)
-- Portfolio: [tajik-develop.yzz.me](https://tajik-develop.yzz.me)
-- Issues: [GitHub Issues](https://github.com/Krekker0101/NATE-1/issues)
 - Releases: [GitHub Releases](https://github.com/Krekker0101/NATE-1/releases)
+- Issues: [GitHub Issues](https://github.com/Krekker0101/NATE-1/issues)
+- Portfolio: [tajik-develop.yzz.me](https://tajik-develop.yzz.me)

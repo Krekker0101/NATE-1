@@ -1,0 +1,72 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">XITKUN system map</title>
+  <desc id="desc">An architecture overview showing the renderer, IPC, credentials, AI router, local data, cloud providers, and Ollama.</desc>
+  <defs>
+    <linearGradient id="bg" x1="104" y1="68" x2="1492" y2="846" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617"/>
+      <stop offset="0.55" stop-color="#08101E"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="line" x1="280" y1="138" x2="1330" y2="770" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EEAD4"/>
+      <stop offset="0.5" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#A78BFA"/>
+    </linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#020617" flood-opacity="0.58"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" rx="36" fill="url(#bg)"/>
+  <text x="96" y="120" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="52" font-weight="700">XITKUN runtime map</text>
+  <text x="96" y="164" fill="#93C5FD" font-family="Segoe UI, Arial, sans-serif" font-size="24">How the desktop UI, secure routing layer, and provider choices work together</text>
+
+  <path d="M372 314H636" stroke="url(#line)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M804 314H1054" stroke="url(#line)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M790 370V570" stroke="url(#line)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M414 668H674" stroke="url(#line)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M906 668H1168" stroke="url(#line)" stroke-width="4" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <rect x="96" y="248" width="276" height="132" rx="28" fill="#0B1220" stroke="#27405D"/>
+    <text x="128" y="300" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Renderer</text>
+    <text x="128" y="338" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">React + Electron UI</text>
+    <text x="128" y="368" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Overlay, settings, model switcher, launcher, transcripts</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="636" y="248" width="336" height="132" rx="28" fill="#0B1220" stroke="#27405D"/>
+    <text x="668" y="300" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Bridge</text>
+    <text x="668" y="338" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Secure IPC + Main Process</text>
+    <text x="668" y="368" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Desktop services, window control, settings persistence, native hooks</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1054" y="248" width="450" height="132" rx="28" fill="#0B1220" stroke="#27405D"/>
+    <text x="1086" y="300" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Control Layer</text>
+    <text x="1086" y="338" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Credentials + AI Router</text>
+    <text x="1086" y="368" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Encrypted service storage, model labels, runtime selection, provider routing</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="214" y="570" width="460" height="150" rx="28" fill="#0B1220" stroke="#27405D"/>
+    <text x="246" y="620" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Local Side</text>
+    <text x="246" y="658" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Context, notes, transcripts, Ollama</text>
+    <text x="246" y="688" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Local-first workflow, desktop state, offline models, on-device context access</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="926" y="570" width="460" height="150" rx="28" fill="#0B1220" stroke="#27405D"/>
+    <text x="958" y="620" fill="#7DD3FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Cloud Side</text>
+    <text x="958" y="658" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">OpenAI, OpenRouter, DeepSeek, Custom API</text>
+    <text x="958" y="688" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">User-owned endpoints with explicit keys, base URLs, and model selection</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="690" y="468" width="200" height="96" rx="24" fill="#111827" stroke="#34557A"/>
+    <text x="726" y="507" fill="#A78BFA" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">Selection ID</text>
+    <text x="726" y="538" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">service:&lt;id&gt;</text>
+  </g>
+
+  <text x="96" y="812" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600">ONE DESKTOP SURFACE  /  MULTIPLE PROVIDERS  /  EXPLICIT ROUTING  /  OFFLINE WHEN POSSIBLE</text>
+</svg>
