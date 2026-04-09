@@ -201,30 +201,48 @@
 
 ---
 
-## 🏗️ ARCHITECTURE
-┌─────────────────────────────────────────────────────────────────────┐  
-│ RENDERER UI (React) │  
-│ Overlay · Settings · Selectors · Flow │  
-└─────────────────────────────────┬───────────────────────────────────┘  
-│ Secure IPC  
-┌─────────────────────────────────▼───────────────────────────────────┐  
-│ ELECTRON MAIN PROCESS │  
-│ Credential Storage · Desktop Integration │  
-└───────────────┬───────────────────────────────┬─────────────────────┘  
-│ │  
-┌───────────▼───────────┐ ┌───────────▼───────────┐  
-│ AI ROUTER LAYER │ │ LOCAL CONTEXT │  
-│ Provider Abstraction │ │ Notes · Transcripts │  
-└───────────┬───────────┘ │ Workflow Memory │  
-│ └───────────────────────┘  
-┌───────────┴───────────────────────────────┐  
-│ │  
-┌───▼───────────┐ ┌──────────────┐ ┌──────▼──────┐  
-│ Ollama │ │ OpenRouter │ │ OpenAI │  
-│ (Local Only) │ │ DeepSeek │ │ Custom │  
-└───────────────┘ └──────────────┘ └─────────────┘
+## System Flow
 
-<br/>
+```mermaid
+flowchart LR
+    A["User"] --> B["XITKUN Overlay"]
+    B --> C["Capture Context"]
+    C --> D["Router"]
+    D --> E["Ollama"]
+    D --> F["OpenRouter"]
+    D --> G["OpenAI-compatible"]
+    D --> H["DeepSeek"]
+
+    C --> I["Notes"]
+    C --> J["Transcripts"]
+    C --> K["Workflow Memory"]
+
+    E --> L["Answer"]
+    F --> L
+    G --> L
+    H --> L
+
+    I --> L
+    J --> L
+    K --> L
+```
+
+---
+### 🔌 Data Flow & Separation of Concerns
+
+| Layer | Responsibility | Tech Stack |
+| :--- | :--- | :--- |
+| **UI Shell** | Rendering overlay, capturing hotkeys, user settings. **Zero Node.js access.** | React 18, TailwindCSS, Framer Motion |
+| **Electron Main** | Window management, global shortcuts, secure credential storage. | Electron, `electron-store`, `safeStorage` |
+| **AI Router** | Load balancing, fallback logic, token streaming abstraction. | TypeScript, RxJS |
+| **Local Context** | Storing and retrieving conversation memory & notes locally. | SQLite (Better-SQLite3), Vector Embeddings |
+
+### 🛡️ Security Model
+
+> The Renderer runs in a **sandboxed** environment. It cannot `require` Node modules or access the file system directly. All system-level operations are exposed through a tightly controlled **Preload Script API**.
+
+- **IPC Validation:** All messages are schema-validated using **Zod**.
+- **Credential Storage:** API Keys are encrypted using OS-level keychains (Credential Vault on macOS, DPAPI on Windows, Secret Service on Linux).
 
 ---
 
