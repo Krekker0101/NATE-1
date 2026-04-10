@@ -498,6 +498,22 @@ contextBridge.exposeInMainWorld("electronAPI", {
     }
   },
 
+  onOverlayBlur: (callback: () => void) => {
+    const subscription = () => callback()
+    ipcRenderer.on("overlay-blur", subscription)
+    return () => {
+      ipcRenderer.removeListener("overlay-blur", subscription)
+    }
+  },
+
+  onOverlayFocus: (callback: () => void) => {
+    const subscription = () => callback()
+    ipcRenderer.on("overlay-focus", subscription)
+    return () => {
+      ipcRenderer.removeListener("overlay-focus", subscription)
+    }
+  },
+
   // LLM Model Management
   getCurrentLlmConfig: () => ipcRenderer.invoke("get-current-llm-config"),
   getAvailableOllamaModels: () => ipcRenderer.invoke("get-available-ollama-models"),

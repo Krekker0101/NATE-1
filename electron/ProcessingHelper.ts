@@ -4,6 +4,7 @@ import { AppState } from "./main"
 import { LLMHelper } from "./LLMHelper"
 import { CredentialsManager } from "./services/CredentialsManager"
 import { app } from "electron"
+import { normalizeOllamaUrl } from "./utils/ollama"
 // import dotenv from "dotenv" // Removed static import
 
 if (!app.isPackaged) {
@@ -26,7 +27,7 @@ export class ProcessingHelper {
     // Check if user wants to use Ollama
     const useOllama = process.env.USE_OLLAMA === "true"
     const ollamaModel = process.env.OLLAMA_MODEL // Don't set default here, let LLMHelper auto-detect
-    const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434"
+    const ollamaUrl = normalizeOllamaUrl(process.env.OLLAMA_URL)
 
     if (useOllama) {
       // console.log("[ProcessingHelper] Initializing with Ollama")
@@ -91,7 +92,7 @@ export class ProcessingHelper {
       ragManager.initializeEmbeddings({
           openaiKey: openaiKey || undefined,
           geminiKey: geminiKey || undefined,
-          // ollamaUrl is not fetched in CredentialsManager yet by default, but we pass these keys
+          ollamaUrl: normalizeOllamaUrl(process.env.OLLAMA_URL),
       });
 
       // CRITICAL: Retry pending embeddings now that we have a key

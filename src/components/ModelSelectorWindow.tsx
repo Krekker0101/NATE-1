@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Loader2 } from 'lucide-react';
 import { AIServiceSummary } from '../lib/aiServiceCatalog';
-import { buildRuntimeModelOptions, CustomProviderSummary, RuntimeModelOption } from '../lib/aiModelPresentation';
+import { buildRuntimeModelOptions, CustomProviderSummary, LegacyModelAvailability, RuntimeModelOption } from '../lib/aiModelPresentation';
 import { useResolvedTheme } from '../hooks/useResolvedTheme';
 
 const ModelSelectorWindow = () => {
@@ -15,7 +15,9 @@ const ModelSelectorWindow = () => {
             return [];
         }
     });
-    const [isLoading, setIsLoading] = useState<boolean>(() => availableModels.length === 0);
+    const [ollamaError, setOllamaError] = useState<string | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const loadModels = async () => {
@@ -24,14 +26,30 @@ const ModelSelectorWindow = () => {
                     setIsLoading(true);
                 }
 
-                const [services, customProviders, ollamaModels, config] = await Promise.all([
+                const [services, customProviders, config, credentials] = await Promise.all([
                     window.electronAPI.getAiServices(),
                     window.electronAPI.getCustomProviders() as Promise<CustomProviderSummary[]>,
-                    window.electronAPI.getAvailableOllamaModels().catch(() => [] as string[]),
                     window.electronAPI.getCurrentLlmConfig(),
+                    window.electronAPI.getStoredCredentials(),
                 ]);
 
-                const models = buildRuntimeModelOptions(services as AIServiceSummary[], customProviders || [], ollamaModels || []);
+                // Load Ollama models with error handling
+                let ollamaModels: string[] = [];
+                try {
+                    ollamaModels = await window.electronAPI.getAvailableOllamaModels();
+                    setOllamaError(null);
+                } catch (error: any) {
+                    console.error('Failed to load Ollama models:', error);
+                    setOllamaError(error.message || 'Ollama not available');
+                }
+
+                const legacy: LegacyModelAvailability = {
+                    hasGeminiKey: credentials.hasGeminiKey,
+                    hasGroqKey: credentials.hasGroqKey,
+                    hasOpenaiKey: credentials.hasOpenaiKey,
+                    hasClaudeKey: credentials.hasClaudeKey,
+                };
+                const models = buildRuntimeModelOptions(services as AIServiceSummary[], customProviders || [], ollamaModels, legacy);
                 localStorage.setItem('cached-models', JSON.stringify(models));
                 setAvailableModels(models);
 
@@ -55,10 +73,51 @@ const ModelSelectorWindow = () => {
         };
     }, []);
 
-    const handleSelect = (modelId: string) => {
+    const handleSelect = async (modelId: string) => {
         setCurrentModel(modelId);
         localStorage.setItem('cached-current-model', modelId);
-        window.electronAPI.setModel(modelId).catch((error: any) => console.error('Failed to set model:', error));
+        await window.electronAPI.setDefaultModel(modelId);
+    };
+
+    const refreshModels = async () => {
+        setIsRefreshing(true);
+        try {
+            const [services, customProviders, config, credentials] = await Promise.all([
+                window.electronAPI.getAiServices(),
+                window.electronAPI.getCustomProviders() as Promise<CustomProviderSummary[]>,
+                window.electronAPI.getCurrentLlmConfig(),
+                window.electronAPI.getStoredCredentials(),
+            ]);
+
+            // Load Ollama models with error handling
+            let ollamaModels: string[] = [];
+            try {
+                ollamaModels = await window.electronAPI.getAvailableOllamaModels();
+                setOllamaError(null);
+            } catch (error: any) {
+                console.error('Failed to refresh Ollama models:', error);
+                setOllamaError(error.message || 'Ollama not available');
+            }
+
+            const legacy: LegacyModelAvailability = {
+                hasGeminiKey: credentials.hasGeminiKey,
+                hasGroqKey: credentials.hasGroqKey,
+                hasOpenaiKey: credentials.hasOpenaiKey,
+                hasClaudeKey: credentials.hasClaudeKey,
+            };
+            const models = buildRuntimeModelOptions(services as AIServiceSummary[], customProviders || [], ollamaModels, legacy);
+            localStorage.setItem('cached-models', JSON.stringify(models));
+            setAvailableModels(models);
+
+            if (config?.model) {
+                setCurrentModel(config.model);
+                localStorage.setItem('cached-current-model', config.model);
+            }
+        } catch (error) {
+            console.error('Failed to refresh models:', error);
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     const panelClass = isLight
@@ -96,6 +155,31 @@ const ModelSelectorWindow = () => {
                         )}
                     </div>
                 )}
+            </div>
+
+            {/* Error and refresh section */}
+            {ollamaError && (
+                <div className={`px-3 py-2 text-xs ${isLight ? 'text-red-600 bg-red-50' : 'text-red-400 bg-red-900/20'} rounded-lg mx-2 mb-2`}>
+                    <div className="font-medium">Ollama Error:</div>
+                    <div className="text-[10px] mt-1">{ollamaError}</div>
+                </div>
+            )}
+
+            <div className="px-2 pb-2">
+                <button
+                    onClick={refreshModels}
+                    disabled={isRefreshing}
+                    className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'} disabled:opacity-50`}
+                >
+                    {isRefreshing ? (
+                        <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Refreshing...
+                        </>
+                    ) : (
+                        'Refresh Models'
+                    )}
+                </button>
             </div>
         </div>
     );

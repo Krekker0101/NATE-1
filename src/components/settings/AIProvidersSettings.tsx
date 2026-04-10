@@ -22,6 +22,7 @@ import {
     getAIServiceTypeLabel,
     prettifyModelId,
 } from '../../lib/aiServiceCatalog';
+import { buildRuntimeModelOptions, LegacyModelAvailability } from '../../lib/aiModelPresentation';
 
 interface ModelOption {
     id: string;
@@ -98,7 +99,7 @@ const createDraft = (serviceType: AIServiceType = 'openrouter'): AIServiceDraft 
     };
 };
 
-export const AIProvidersSettings: React.FC = () => {
+export const AIProvidersSettings = () => {
     const [aiServices, setAiServices] = useState<AIServiceSummary[]>([]);
     const [ollamaModels, setOllamaModels] = useState<string[]>([]);
     const [defaultModel, setDefaultModel] = useState('');
@@ -109,25 +110,30 @@ export const AIProvidersSettings: React.FC = () => {
     const [serviceModels, setServiceModels] = useState<Array<{ id: string; label: string }>>([]);
     const [isFetchingModels, setIsFetchingModels] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [ollamaError, setOllamaError] = useState<string | null>(null);
     const [isRefreshingOllama, setIsRefreshingOllama] = useState(false);
     const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
     const [errorText, setErrorText] = useState('');
+    const [legacyAvailability, setLegacyAvailability] = useState<LegacyModelAvailability>({});
 
     const preset = getAIServicePreset(draft.serviceType);
 
     const defaultOptions = useMemo<ModelOption[]>(() => {
-        const options: ModelOption[] = aiServices.map((service) => ({
+        const options: ModelOption[] = buildRuntimeModelOptions(aiServices, [], ollamaModels, legacyAvailability)
+            .map((option) => ({ id: option.id, name: option.name }));
+        /*
             id: getAIServiceModelId(service.id),
             name: `${service.name} • ${service.model}`,
         }));
         ollamaModels.forEach((model) => {
             options.push({ id: `ollama-${model}`, name: `${model} (Local)` });
         });
+        */
         if (defaultModel && !options.find((option) => option.id === defaultModel)) {
             options.unshift({ id: defaultModel, name: prettifyModelId(defaultModel) });
         }
         return options;
-    }, [aiServices, defaultModel, ollamaModels]);
+    }, [aiServices, defaultModel, legacyAvailability, ollamaModels]);
 
     const fetchedModelOptions = useMemo<ModelOption[]>(
         () => serviceModels.map((model) => ({ id: model.id, name: model.label })),
@@ -135,14 +141,30 @@ export const AIProvidersSettings: React.FC = () => {
     );
 
     const loadData = async () => {
-        const [services, storedDefault, detectedOllamaModels] = await Promise.all([
+        const [services, storedDefault, credentials] = await Promise.all([
             window.electronAPI.getAiServices(),
             window.electronAPI.getDefaultModel(),
-            window.electronAPI.getAvailableOllamaModels().catch(() => [] as string[]),
+            window.electronAPI.getStoredCredentials(),
         ]);
         setAiServices(services || []);
         setDefaultModel(storedDefault.model || '');
-        setOllamaModels(detectedOllamaModels || []);
+        setLegacyAvailability({
+            hasGeminiKey: credentials.hasGeminiKey,
+            hasGroqKey: credentials.hasGroqKey,
+            hasOpenaiKey: credentials.hasOpenaiKey,
+            hasClaudeKey: credentials.hasClaudeKey,
+        });
+
+        // Load Ollama models with error handling
+        try {
+            const detectedOllamaModels = await window.electronAPI.getAvailableOllamaModels();
+            setOllamaModels(detectedOllamaModels || []);
+            setOllamaError(null);
+        } catch (error: any) {
+            console.error('Failed to load Ollama models:', error);
+            setOllamaModels([]);
+            setOllamaError(error.message || 'Failed to connect to Ollama');
+        }
     };
 
     useEffect(() => {
@@ -164,6 +186,21 @@ export const AIProvidersSettings: React.FC = () => {
 
     const updateDraft = <K extends keyof AIServiceDraft>(key: K, value: AIServiceDraft[K]) => {
         setDraft((current) => ({ ...current, [key]: value }));
+    };
+
+    const refreshOllamaModels = async () => {
+        setIsRefreshingOllama(true);
+        try {
+            const detectedOllamaModels = await window.electronAPI.getAvailableOllamaModels();
+            setOllamaModels(detectedOllamaModels || []);
+            setOllamaError(null);
+        } catch (error: any) {
+            console.error('Failed to refresh Ollama models:', error);
+            setOllamaModels([]);
+            setOllamaError(error.message || 'Failed to connect to Ollama');
+        } finally {
+            setIsRefreshingOllama(false);
+        }
     };
 
     const changeServiceType = (serviceType: AIServiceType) => {
@@ -305,10 +342,30 @@ export const AIProvidersSettings: React.FC = () => {
                     <h3 className="text-sm font-bold text-text-primary mb-1">Default AI Model</h3>
                     <p className="text-xs text-text-secondary mb-2">Choose which configured service or local Ollama model should answer by default.</p>
                 </div>
-                <div className="bg-bg-item-surface rounded-xl p-5 border border-border-subtle flex items-center justify-between gap-4">
-                    <div>
-                        <label className="block text-xs font-medium text-text-primary uppercase tracking-wide mb-0">Active Model</label>
-                        <p className="text-[10px] text-text-secondary">Only services you added yourself and detected local Ollama models appear here.</p>
+                <div className="bg-bg-item-surface rounded-xl p-5 border border-border-subtle">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <div>
+                            <label className="block text-xs font-medium text-text-primary uppercase tracking-wide mb-0">Active Model</label>
+                            <p className="text-[10px] text-text-secondary">Only services you added yourself and detected local Ollama models appear here.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                try {
+                                    const result = await window.electronAPI.testCurrentLlmConnection();
+                                    if (result.success) {
+                                        alert('Connection test successful!');
+                                    } else {
+                                        alert(`Connection test failed: ${result.error || 'Unknown error'}`);
+                                    }
+                                } catch (error: any) {
+                                    alert(`Connection test failed: ${error.message || 'Unknown error'}`);
+                                }
+                            }}
+                            className="px-3 py-1.5 bg-accent-primary hover:bg-accent-primary-hover text-white rounded-lg text-xs font-medium transition-colors"
+                        >
+                            Test Connection
+                        </button>
                     </div>
                     <div className="w-72 max-w-full">
                         <ModelSelect

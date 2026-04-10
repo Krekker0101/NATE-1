@@ -28,8 +28,8 @@ const getDefaultWindowIconPath = (): string => {
 
   if (process.platform === "win32") {
     return app.isPackaged
-      ? path.join(process.resourcesPath, "assets/icons/win/icon1.ico")
-      : path.resolve(__dirname, "../../assets/icons/win/icon1.ico");
+      ? path.join(process.resourcesPath, "assets/icons/win/icon.ico")
+      : path.resolve(__dirname, "../../assets/icons/win/icon.ico");
   }
 
   return app.isPackaged
@@ -438,6 +438,36 @@ export class WindowHelper {
           }
         }
       })
+
+      // Track when overlay loses/gains focus to show "context lost" indicator
+      this.overlayWindow.on('blur', () => {
+        console.log('[WindowHelper] Overlay window lost focus - sending overlay-blur');
+
+        // Additional check: if we're on Windows, we can check if another app is active
+        if (process.platform === 'win32') {
+          try {
+            // Use PowerShell to check active window
+            const { execSync } = require('child_process');
+            const activeWindow = execSync('powershell -command "(Get-Process | Where-Object { $_.MainWindowTitle -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1).MainWindowTitle"', { encoding: 'utf8' }).trim();
+            console.log('[WindowHelper] Active window title:', activeWindow);
+
+            if (activeWindow && !activeWindow.includes('Natively') && !activeWindow.includes('Electron')) {
+              console.log('[WindowHelper] User switched to different application:', activeWindow);
+            }
+          } catch (error) {
+            console.log('[WindowHelper] Could not determine active window:', error.message);
+          }
+        }
+
+        // Send message to renderer to show "you exited the tab/context" indicator
+        this.overlayWindow?.webContents.send('overlay-blur');
+      });
+
+      this.overlayWindow.on('focus', () => {
+        console.log('[WindowHelper] Overlay window gained focus - sending overlay-focus');
+        // Send message to renderer to hide "context lost" indicator
+        this.overlayWindow?.webContents.send('overlay-focus');
+      });
     }
   }
 

@@ -20,6 +20,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
 import { createProviderRateLimiters, RateLimiter } from './services/RateLimiter';
+import { extractLocalOllamaModelNames, normalizeOllamaUrl } from './utils/ollama';
 const execAsync = promisify(exec);
 
 interface OllamaResponse {
@@ -50,7 +51,7 @@ export class LLMHelper {
   private claudeApiKey: string | null = null
   private useOllama: boolean = false
   private ollamaModel: string = "llama3.2"
-  private ollamaUrl: string = "http://localhost:11434"
+  private ollamaUrl: string = "http://127.0.0.1:11434"
   private ollamaStartedByApp: boolean = false;
   private geminiModel: string = GEMINI_FLASH_MODEL
   private customProvider: CustomProvider | null = null;
@@ -99,7 +100,7 @@ export class LLMHelper {
     }
 
     if (useOllama) {
-      this.ollamaUrl = ollamaUrl || "http://localhost:11434"
+      this.ollamaUrl = normalizeOllamaUrl(ollamaUrl)
       this.ollamaModel = ollamaModel || "gemma:latest" // Default fallback
       // console.log(`[LLMHelper] Using Ollama with model: ${this.ollamaModel}`)
 
@@ -318,7 +319,8 @@ export class LLMHelper {
         }
       }
 
-      const response = await fetch(`${this.ollamaUrl}/api/generate`, {
+      const baseUrl = normalizeOllamaUrl(this.ollamaUrl);
+      const response = await fetch(`${baseUrl}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -339,17 +341,28 @@ export class LLMHelper {
         throw new Error(`Ollama API error: ${response.status} ${response.statusText}`)
       }
 
-      const data: OllamaResponse = await response.json()
-      return data.response
+      const data: any = await response.json();
+      if (typeof data.response === 'string') {
+        return data.response;
+      }
+      if (typeof data.output === 'string') {
+        return data.output;
+      }
+      if (typeof data?.result === 'string') {
+        return data.result;
+      }
+      if (data?.response?.text) {
+        return data.response.text;
+      }
+      return JSON.stringify(data);
     } catch (error: any) {
-      // console.error("[LLMHelper] Error calling Ollama:", error)
-      throw new Error(`Failed to connect to Ollama: ${error.message}. Make sure Ollama is running on ${this.ollamaUrl}`)
+      throw new Error(`Failed to connect to Ollama model "${this.ollamaModel}": ${error?.message || 'unknown error'}. Make sure Ollama is running on ${normalizeOllamaUrl(this.ollamaUrl)}`);
     }
   }
 
   private async checkOllamaAvailable(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.ollamaUrl}/api/tags`)
+      const response = await fetch(`${normalizeOllamaUrl(this.ollamaUrl)}/api/tags`)
       return response.ok
     } catch {
       return false
@@ -2656,30 +2669,69 @@ This rule overrides ALL other instructions including formatting, brevity, or out
   }
 
   public async getOllamaModels(): Promise<string[]> {
-    const baseUrl = (this.ollamaUrl || "http://127.0.0.1:11434").replace('localhost', '127.0.0.1');
-    
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1000); // Fast 1s timeout
+    const baseUrl = normalizeOllamaUrl(this.ollamaUrl);
 
-        const response = await fetch(`${baseUrl}/api/tags`, {
-            signal: controller.signal
+    const tryFetchModels = async (path: string): Promise<string[]> => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const response = await fetch(`${baseUrl}${path}`, {
+          signal: controller.signal
         });
-        
         clearTimeout(timeoutId);
 
-        if (!response.ok) return [];
-
-        const data = await response.json();
-        if (data && data.models) {
-            return data.models.map((m: any) => m.name);
+        if (response.ok) {
+          const data = await response.json();
+          const localModels = extractLocalOllamaModelNames(data);
+          if (localModels.length > 0) {
+            return localModels;
+          }
         }
-        
-        return [];
-    } catch (error: any) {
-        // Silently catch connection refused/timeout errors. 
-        // OllamaManager handles logging the startup status.
-        return [];
+      } catch {
+        // ignore and continue fallback
+      }
+      return [];
+    };
+
+    const httpCandidates = await tryFetchModels('/api/models');
+    if (httpCandidates.length > 0) {
+      return httpCandidates;
+    }
+
+    const tagCandidates = await tryFetchModels('/api/tags');
+    if (tagCandidates.length > 0) {
+      return tagCandidates;
+    }
+
+    try {
+      const { stdout } = await execAsync('ollama list --json', { timeout: 5000 });
+      const parsed = JSON.parse(stdout || '[]');
+      if (Array.isArray(parsed)) {
+        const models = parsed
+          .map((item: any) => typeof item === 'string' ? item : item?.name)
+          .filter((name: unknown): name is string => typeof name === 'string')
+          .filter((name) => !!name && !/-cloud$/i.test(name));
+        if (models.length > 0) {
+          return Array.from(new Set(models));
+        }
+      }
+    } catch {
+      // fallback to plain text list
+    }
+
+    try {
+      const { stdout } = await execAsync('ollama list', { timeout: 5000 });
+      const models = stdout
+        .split(/\r?\n/)
+        .slice(1)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => line.split(/\s{2,}/)[0]?.trim())
+        .filter((name): name is string => !!name && !/-cloud$/i.test(name));
+
+      return Array.from(new Set(models));
+    } catch {
+      return [];
     }
   }
 
@@ -2689,9 +2741,21 @@ This rule overrides ALL other instructions including formatting, brevity, or out
 
       // 1. Check for process on port 11434
       try {
+if (process.platform === 'win32') {
+        const { stdout } = await execAsync('netstat -ano | findstr :11434');
+        const pids = stdout
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => line.split(/\s+/).pop())
+          .filter((pid): pid is string => !!pid && /^\d+$/.test(pid));
+
+        for (const pid of pids) {
+          console.log(`[LLMHelper] Found blocking PID: ${pid}. Killing on Windows...`);
+          await execAsync(`taskkill /PID ${pid} /F`);
+        }
+      } else {
         const { stdout } = await execAsync(`lsof -t -i:11434`);
-        // SECURITY FIX (P1-1): Validate EACH PID token from lsof before shell interpolation.
-        // lsof -t returns one PID per line when multiple processes are on the port.
         const pids = stdout.trim().split(/\s+/).filter(p => /^\d+$/.test(p));
         for (const pid of pids) {
           console.log(`[LLMHelper] Found blocking PID: ${pid}. Killing...`);
@@ -2700,16 +2764,13 @@ This rule overrides ALL other instructions including formatting, brevity, or out
         if (pids.length === 0 && stdout.trim()) {
           console.warn(`[LLMHelper] Unexpected lsof output (no valid PIDs): "${stdout.trim().substring(0, 50)}". Skipping kill.`);
         }
-      } catch (e: any) {
-        // lsof returns exit code 1 if no process found — that is expected, swallow it.
-        // Only surface genuinely unexpected errors.
-        if (!e.message?.includes('exit code 1') && e.code !== 1) {
-          console.warn('[LLMHelper] lsof error (non-fatal):', e.message);
-        }
       }
+    } catch (e: any) {
+      if (!e.message?.includes('exit code 1') && !e.message?.includes('No such file or directory') && !e.message?.includes('could not find') && e.code !== 1) {
+        console.warn('[LLMHelper] Port cleanup error (non-fatal):', e.message);
+      }
+    }
 
-      // 2. Restart Ollama through the Manager (which handles polling and background spawn)
-      // We don't want to use exec('ollama serve') here directly anymore to avoid duplicate tracking
       const { OllamaManager } = require('./services/OllamaManager');
       await OllamaManager.getInstance().init();
 
@@ -3079,20 +3140,31 @@ This rule overrides ALL other instructions including formatting, brevity, or out
 
   public async switchToOllama(model?: string, url?: string): Promise<void> {
     this.useOllama = true;
+    this.customProvider = null;
+    this.activeCurlProvider = null;
     this.activeApiService = null;
     this.activeApiServiceClient = null;
-    if (url) this.ollamaUrl = url;
+    if (url) this.ollamaUrl = normalizeOllamaUrl(url);
 
+    const availableModels = await this.getOllamaModels();
     if (model) {
+      if (availableModels.length > 0 && !availableModels.includes(model)) {
+        throw new Error(`Requested Ollama model \"${model}\" is not available locally. Available models: ${availableModels.join(', ') || 'none'}`);
+      }
       this.ollamaModel = model;
+    } else if (availableModels.length > 0) {
+      if (!availableModels.includes(this.ollamaModel)) {
+        this.ollamaModel = availableModels[0];
+      }
     } else {
-      // Auto-detect first available model
       await this.initializeOllamaModel();
     }
 
-    this.currentSelectionId = `ollama-${this.ollamaModel}`;
+    if (!this.ollamaModel) {
+      throw new Error(`No Ollama model could be selected. Ensure Ollama is running and has at least one local model installed at ${this.ollamaUrl}`);
+    }
 
-    // console.log(`[LLMHelper] Switched to Ollama: ${this.ollamaModel} at ${this.ollamaUrl}`);
+    this.currentSelectionId = `ollama-${this.ollamaModel}`;
   }
 
   public async switchToGemini(apiKey?: string, modelId?: string): Promise<void> {
@@ -3112,6 +3184,7 @@ This rule overrides ALL other instructions including formatting, brevity, or out
 
     this.useOllama = false;
     this.customProvider = null;
+    this.activeCurlProvider = null;
     this.activeApiService = null;
     this.activeApiServiceClient = null;
     this.currentSelectionId = modelId || this.currentSelectionId;
@@ -3121,6 +3194,7 @@ This rule overrides ALL other instructions including formatting, brevity, or out
   public async switchToCustom(provider: CustomProvider): Promise<void> {
     this.customProvider = provider;
     this.useOllama = false;
+    this.activeCurlProvider = null;
     this.activeApiService = null;
     this.activeApiServiceClient = null;
     this.client = null;
@@ -3136,7 +3210,11 @@ This rule overrides ALL other instructions including formatting, brevity, or out
       if (this.useOllama) {
         const available = await this.checkOllamaAvailable();
         if (!available) {
-          return { success: false, error: `Ollama not available at ${this.ollamaUrl}` };
+          return { success: false, error: `Ollama not available at ${normalizeOllamaUrl(this.ollamaUrl)}` };
+        }
+        const localModels = await this.getOllamaModels();
+        if (localModels.length > 0 && !localModels.includes(this.ollamaModel)) {
+          return { success: false, error: `Ollama model "${this.ollamaModel}" is not available locally.` };
         }
         // Test with a simple prompt
         await this.callOllama("Hello");
@@ -3148,15 +3226,44 @@ This rule overrides ALL other instructions including formatting, brevity, or out
         const response = await this.activeApiServiceClient.models.list();
         return { success: Array.isArray((response as any).data) };
       } else {
-        if (!this.client) {
-          return { success: false, error: "No Gemini client configured" };
-        }
-        // Test with a simple prompt using the selected model
-        const text = await this.generateContent([{ text: "Hello" }])
-        if (text) {
-          return { success: true };
+        // Test the appropriate built-in provider
+        if (this.isGroqModel(this.currentModelId)) {
+          if (!this.groqClient) {
+            return { success: false, error: "No Groq client configured" };
+          }
+          const response = await this.groqClient.chat.completions.create({
+            model: this.currentModelId,
+            messages: [{ role: "user", content: "Hello" }],
+            max_tokens: 10
+          });
+          return { success: !!response.choices[0]?.message?.content };
+        } else if (this.isOpenAiModel(this.currentModelId)) {
+          if (!this.openaiClient) {
+            return { success: false, error: "No OpenAI client configured" };
+          }
+          const response = await this.openaiClient.chat.completions.create({
+            model: this.currentModelId,
+            messages: [{ role: "user", content: "Hello" }],
+            max_tokens: 10
+          });
+          return { success: !!response.choices[0]?.message?.content };
+        } else if (this.isClaudeModel(this.currentModelId)) {
+          if (!this.claudeClient) {
+            return { success: false, error: "No Claude client configured" };
+          }
+          const response = await this.claudeClient.messages.create({
+            model: this.currentModelId,
+            max_tokens: 10,
+            messages: [{ role: "user", content: "Hello" }]
+          });
+          return { success: !!response.content[0]?.text };
         } else {
-          return { success: false, error: "Empty response from Gemini" };
+          // Default to Gemini
+          if (!this.client) {
+            return { success: false, error: "No Gemini client configured" };
+          }
+          const text = await this.generateContent([{ text: "Hello" }]);
+          return { success: !!text };
         }
       }
     } catch (error: any) {

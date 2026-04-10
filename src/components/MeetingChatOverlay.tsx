@@ -192,6 +192,7 @@ const MeetingChatOverlay: React.FC<MeetingChatOverlayProps> = ({
     const [messages, setMessages] = useState<Message[]>([]);
     const [chatState, setChatState] = useState<ChatState>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isBlurred, setIsBlurred] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatWindowRef = useRef<HTMLDivElement>(null);
@@ -239,6 +240,40 @@ const MeetingChatOverlay: React.FC<MeetingChatOverlayProps> = ({
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen]);
+
+    // Listen for overlay blur/focus events
+    useEffect(() => {
+        const handleOverlayBlur = () => {
+            console.log('[MeetingChatOverlay] Received overlay-blur event, setting isBlurred = true');
+            setIsBlurred(true);
+        };
+        const handleOverlayFocus = () => {
+            console.log('[MeetingChatOverlay] Received overlay-focus event, setting isBlurred = false');
+            setIsBlurred(false);
+        };
+
+        window.electronAPI.onOverlayBlur(handleOverlayBlur);
+        window.electronAPI.onOverlayFocus(handleOverlayFocus);
+
+        // Also listen for browser tab visibility changes
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                console.log('[MeetingChatOverlay] Browser tab became hidden, setting isBlurred = true');
+                setIsBlurred(true);
+            } else {
+                console.log('[MeetingChatOverlay] Browser tab became visible, setting isBlurred = false');
+                setIsBlurred(false);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.electronAPI.offOverlayBlur(handleOverlayBlur);
+            window.electronAPI.offOverlayFocus(handleOverlayFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
 
     // Click outside handler
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
@@ -509,6 +544,18 @@ ${contextString}`;
                             <div className="flex items-center gap-2 text-text-tertiary">
                                 <img src={nativelyIcon} className="w-3.5 h-3.5 force-black-icon opacity-50" alt="logo" />
                                 <span className="text-[13px] font-medium">Search this meeting</span>
+                                {isBlurred && (
+                                    <span
+                                        className="text-[11px] text-orange-400 font-medium ml-2 px-2 py-0.5 bg-orange-500/10 rounded-full border border-orange-500/20 cursor-pointer hover:bg-orange-500/20 transition-colors"
+                                        onClick={() => {
+                                            console.log('[MeetingChatOverlay] User clicked on blur indicator, resetting isBlurred = false');
+                                            setIsBlurred(false);
+                                        }}
+                                        title="Нажмите, чтобы сбросить индикатор потери контекста"
+                                    >
+                                        Вы вышли из контекста
+                                    </span>
+                                )}
                             </div>
                             <button
                                 onClick={handleClose}

@@ -66,6 +66,8 @@ export interface ElectronAPI {
   setOpenAtLogin: (open: boolean) => Promise<{ success: boolean; error?: string }>
   getOpenAtLogin: () => Promise<boolean>
   onSettingsVisibilityChange: (callback: (isVisible: boolean) => void) => () => void
+  onOverlayBlur: (callback: () => void) => () => void
+  onOverlayFocus: (callback: () => void) => () => void
   toggleSettingsWindow: (coords?: { x: number; y: number }) => Promise<void>
   closeSettingsWindow: () => Promise<void>
   toggleAdvancedSettings: () => Promise<void>
@@ -77,6 +79,7 @@ export interface ElectronAPI {
   switchToOllama: (model?: string, url?: string) => Promise<{ success: boolean; error?: string }>
   switchToGemini: (apiKey?: string, modelId?: string) => Promise<{ success: boolean; error?: string }>
   testLlmConnection: (provider: 'gemini' | 'groq' | 'openai' | 'claude', apiKey?: string) => Promise<{ success: boolean; error?: string }>
+  testCurrentLlmConnection: () => Promise<{ success: boolean; error?: string }>
   selectServiceAccount: () => Promise<{ success: boolean; path?: string; cancelled?: boolean; error?: string }>
 
   // API Key Management

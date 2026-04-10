@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Server, Settings2, Terminal } from 'lucide-react';
 import { AIServiceSummary } from '../../lib/aiServiceCatalog';
-import { buildRuntimeModelOptions, CustomProviderSummary, formatRuntimeModelLabel, RuntimeModelOption } from '../../lib/aiModelPresentation';
+import { buildRuntimeModelOptions, CustomProviderSummary, LegacyModelAvailability, formatRuntimeModelLabel, RuntimeModelOption } from '../../lib/aiModelPresentation';
 
 interface ModelSelectorProps {
     currentModel: string;
@@ -28,14 +28,21 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ currentModel, onSe
     useEffect(() => {
         const load = async () => {
             try {
-                const [services, custom, ollamaModels] = await Promise.all([
+                const [services, custom, ollamaModels, credentials] = await Promise.all([
                     window.electronAPI.getAiServices(),
                     window.electronAPI.getCustomProviders() as Promise<CustomProviderSummary[]>,
                     window.electronAPI.getAvailableOllamaModels(),
+                    window.electronAPI.getStoredCredentials(),
                 ]);
                 setAiServices(services as AIServiceSummary[]);
                 setCustomProviders(custom || []);
-                setOptions(buildRuntimeModelOptions(services as AIServiceSummary[], custom || [], ollamaModels || []));
+                const legacy: LegacyModelAvailability = {
+                    hasGeminiKey: credentials.hasGeminiKey,
+                    hasGroqKey: credentials.hasGroqKey,
+                    hasOpenaiKey: credentials.hasOpenaiKey,
+                    hasClaudeKey: credentials.hasClaudeKey,
+                };
+                setOptions(buildRuntimeModelOptions(services as AIServiceSummary[], custom || [], ollamaModels || [], legacy));
             } catch (error) {
                 console.error('Failed to load model options:', error);
                 setOptions([]);
@@ -48,6 +55,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ currentModel, onSe
     }, [isOpen]);
 
     const grouped = {
+        legacy: options.filter((option) => option.type === 'legacy'),
         service: options.filter((option) => option.type === 'service'),
         custom: options.filter((option) => option.type === 'custom'),
         local: options.filter((option) => option.type === 'local'),
@@ -94,6 +102,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ currentModel, onSe
                 <div className="absolute bottom-full left-0 mb-2 w-72 bg-bg-item-surface border border-border-subtle rounded-xl shadow-xl z-50 overflow-hidden animated fadeIn">
                     <div className="p-2 max-h-72 overflow-y-auto space-y-2">
                         {renderGroup('AI Services', grouped.service, <Settings2 size={12} />)}
+                        {renderGroup('Built-in', grouped.legacy, <Settings2 size={12} />)}
                         {renderGroup('Custom', grouped.custom, <Terminal size={12} />)}
                         {renderGroup('Local Ollama', grouped.local, <Server size={12} />)}
                         {options.length === 0 && (

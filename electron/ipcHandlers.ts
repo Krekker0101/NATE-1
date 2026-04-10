@@ -1575,6 +1575,17 @@ export function initializeIpcHandlers(appState: AppState): void {
     }
   });
 
+  safeHandle("test-current-llm-connection", async () => {
+    try {
+      const llmHelper = appState.processingHelper.getLLMHelper();
+      const result = await llmHelper.testConnection();
+      return result;
+    } catch (error: any) {
+      console.error("Current LLM connection test failed:", error);
+      return { success: false, error: error.message || 'Connection test failed' };
+    }
+  });
+
   safeHandle("get-groq-fast-text-mode", () => {
     try {
       const llmHelper = appState.processingHelper.getLLMHelper();
